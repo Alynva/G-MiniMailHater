@@ -9,7 +9,7 @@
     "twitter": "Alynva"
   }],
   "version": "1.0",
-  "categories": ["Fun"],
+  "categories": ["Usability"],
 
   "source": "https://github.com/Alynva/G-MiniMailHater",
   "readme": "https://github.com/Alynva/G-MiniMailHater#readme",
@@ -19,7 +19,7 @@
 
   "framework": {
     "name": "G-Node",
-    "version": "0.2.9"
+    "version": "0.2.18"
   },
 
   "language": "Node.js",
