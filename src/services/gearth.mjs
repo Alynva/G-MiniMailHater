@@ -2,27 +2,28 @@ import { Extension, HPacket, HDirection } from 'gnode-api'
 
 const ext = new Extension({
 	author: 'Alynva',
-	description: 'Automatically give a like in all rooms you visit.',
-	name: "G-AutoLikeRooms",
+	description: 'Automatically get rid of the minimail notification.',
+	name: "G-MiniMailHater",
 	version: "1.0.0",
 })
 
 ext.run()
 
 ext.on('connect', async () => {
-	ext.writeToConsole(`G-AutoLikeRooms ready.`)
+	ext.writeToConsole(`G-MiniMailHater ready.`)
 })
 
-ext.interceptByNameOrHash(HDirection.TOCLIENT, "GetGuestRoomResult", message => {
-	const entrance = message.getPacket().readBoolean()
+let onClickCallback = null
+ext.on('click', () => {
+	if (typeof onClickCallback === 'function')
+		onClickCallback()
+})
 
-	if (!entrance) return
-
-	for (const handler of onRoomChangeHandlers) {
-		if (typeof handler !== 'function') continue
-
-		handler()
-	}
+ext.interceptByNameOrHash(HDirection.TOCLIENT, "MiniMailNew", message => {
+	message.blocked = true
+})
+ext.interceptByNameOrHash(HDirection.TOCLIENT, "MiniMailUnreadCount", message => {
+	message.blocked = true
 })
 
 /**
@@ -44,16 +45,18 @@ function safeSend(direction, packet) {
 	}
 }
 
-const onRoomChangeHandlers = []
-function onRoomChange(handler) {
-	onRoomChangeHandlers.push(handler)
+function blockMessage(direction, packetName) {
+	ext.interceptByNameOrHash(direction, packetName, message => {
+		message.blocked = true
+	})
 }
 
-function giveLikeToRoom() {
-	safeSend(HDirection.TOSERVER, new HPacket(`{out:RateFlat}{i:1}`))
+function resetCount() {
+	safeSend(HDirection.TOCLIENT, new HPacket(`{in:MiniMailUnreadCount}{i:0}`))
 }
 
 export default {
-	onRoomChange,
-	giveLikeToRoom,
+	onClicked: fc => onClickCallback = fc,
+	resetCount,
+	blockMessage,
 }
